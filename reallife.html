@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Life Math: Shape Design & Budgeting</title>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-dark: #1b5e20;
+      --primary-light: #e8f5e9;
+      --secondary: #0288d1;
+      --accent: #f57c00;
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --text: #2c3e50;
+      --text-muted: #6c757d;
+      --border: #e0e0e0;
+      --success: #2e7d32;
+      --danger: #c62828;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    header h1 {
+      color: var(--primary-dark);
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    /* Scenario Tabs */
+    .scenario-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .scenario-btn {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 30px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .scenario-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .scenario-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+    }
+
+    /* Main Grid */
+    .app-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .app-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Card styling */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 8px;
+    }
+
+    /* Controls */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="number"]:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    }
+
+    /* SVG Canvas */
+    .canvas-container {
+      background: #fafafa;
+      border: 2px dashed #ccc;
+      border-radius: var(--radius);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 380px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    svg#designCanvas {
+      width: 100%;
+      height: 380px;
+    }
+
+    /* Cost & Summary Badges */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .summary-item {
+      background: var(--primary-light);
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .summary-item.secondary {
+      background: #e1f5fe;
+    }
+
+    .summary-item.accent {
+      background: #fff3e0;
+    }
+
+    .summary-item label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .summary-item .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    /* Budget Status Badge */
+    .budget-status {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .budget-status.under {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 2px solid #2e7d32;
+    }
+
+    .budget-status.over {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 2px solid #c62828;
+    }
+
+    /* Practice Quiz Section */
+    .quiz-card {
+      border: 2px solid var(--secondary);
+    }
+
+    .quiz-card h2 {
+      color: var(--secondary);
+      border-bottom-color: #e1f5fe;
+    }
+
+    .quiz-question {
+      margin-bottom: 16px;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .feedback.correct {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
+    .feedback.incorrect {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+    }
+
+    .btn-secondary:hover {
+      background: #0277bd;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+
+    .shape-a-color { background-color: rgba(76, 175, 80, 0.4); border: 2px solid #2e7d32; }
+    .shape-b-color { background-color: rgba(33, 150, 243, 0.4); border: 2px solid #0288d1; }
+    .shared-border { border-top: 3px dashed #ff9800; width: 18px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Real Life Math Architect</h1>
+      <p>Combine shapes to design spaces, calculate perimeter & area, manage project costs, and check budgets!</p>
+    </header>
+
+    <!-- Scenario Navigation Tabs -->
+    <div class="scenario-nav" id="scenarioNav">
+      <button class="scenario-btn active" data-scenario="garden">
+        🌱 Design a School Garden
+      </button>
+      <button class="scenario-btn" data-scenario="classroom">
+        🏫 Design Classroom Floor
+      </button>
+      <button class="scenario-btn" data-scenario="playground">
+        🛝 Design Playground Zone
+      </button>
+    </div>
+
+    <div class="app-grid">
+      <!-- Left Controls Panel -->
+      <div class="sidebar">
+        <!-- Scenario Setup -->
+        <div class="card">
+          <h2>📐 Dimensions & Layout</h2>
+
+          <div class="form-group">
+            <label for="attachmentMode">Attachment Style:</label>
+            <select id="attachmentMode">
+              <option value="side-by-side">Side-by-Side (Joined Vertically)</option>
+              <option value="stacked">Stacked Top-to-Bottom (Joined Horizontally)</option>
+            </select>
+          </div>
+
+          <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--border);">
+
+          <h3 style="font-size: 1rem; color: #2e7d32; margin-bottom: 10px;" id="shapeALabel">Shape A: Section 1</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="shapeAWidth">Width (<span class="unit-label">m</span>):</label>
+              <input type="number" id="shapeAWidth" min="1" max="30" value="6">
+            </div>
+            <div class="form-group">
+              <label for="shapeAHeight">Height (<span class="unit-label">m</span>):</label>
+              <input type="number" id="shapeAHeight" min="1" max="30" value="4">
+            </div>
+          </div>
+
+          <h3 style="font-size: 1rem; color: #0288d1; margin-bottom: 10px;" id="shapeBLabel">Shape B: Section 2</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="shapeBWidth">Width (<span class="unit-label">m</span>):</label>
+              <input type="number" id="shapeBWidth" min="1" max="30" value="4">
+            </div>
+            <div class="form-group">
+              <label for="shapeBHeight">Height (<span class="unit-label">m</span>):</label>
+              <input type="number" id="shapeBHeight" min="1" max="30" value="4">
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget & Unit Prices Setup -->
+        <div class="card">
+          <h2>💰 Budget & Unit Prices</h2>
+          <div class="form-group">
+            <label for="borderPrice" id="borderPriceLabel">Fence Price per <span class="unit-label">m</span> ($):</label>
+            <input type="number" id="borderPrice" min="0" step="0.5" value="15">
+          </div>
+          <div class="form-group">
+            <label for="surfacePrice" id="surfacePriceLabel">Grass Price per sq <span class="unit-label">m</span> ($):</label>
+            <input type="number" id="surfacePrice" min="0" step="0.5" value="10">
+          </div>
+          <div class="form-group">
+            <label for="budgetLimit">Total Project Budget ($):</label>
+            <input type="number" id="budgetLimit" min="0" step="10" value="700">
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Main Area: Visualization & Live Calculation -->
+      <div class="main-content">
+        <!-- SVG Visualizer -->
+        <div class="card">
+          <h2 id="scenarioTitle">🌱 School Garden Floor Plan</h2>
+          <div class="canvas-container">
+            <svg id="designCanvas" viewBox="0 0 600 380" preserveAspectRatio="xMidYMid meet">
+              <!-- SVG elements drawn via JavaScript -->
+            </svg>
+          </div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color shape-a-color"></div>
+              <span id="legendALabel">Section A</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color shape-b-color"></div>
+              <span id="legendBLabel">Section B</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color shared-border"></div>
+              <span>Shared Inner Wall (No Fence/Border Needed)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculated Summary -->
+        <div class="card">
+          <h2>📊 Design Measurements & Cost Calculation</h2>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <label id="perimeterCalcLabel">Outer Fence Perimeter</label>
+              <div class="value"><span id="calcPerimeter">0</span> <span class="unit-label">m</span></div>
+            </div>
+            <div class="summary-item">
+              <label id="areaCalcLabel">Total Grass Area</label>
+              <div class="value"><span id="calcArea">0</span> <span class="unit-label">m²</span></div>
+            </div>
+            <div class="summary-item secondary">
+              <label id="borderCostLabel">Fence Cost</label>
+              <div class="value">$<span id="calcBorderCost">0</span></div>
+            </div>
+            <div class="summary-item secondary">
+              <label id="surfaceCostLabel">Grass Area Cost</label>
+              <div class="value">$<span id="calcSurfaceCost">0</span></div>
+            </div>
+            <div class="summary-item accent">
+              <label>Total Project Cost</label>
+              <div class="value">$<span id="calcTotalCost">0</span></div>
+            </div>
+          </div>
+
+          <div id="budgetStatus" class="budget-status under">
+            <span id="statusIcon">✅</span>
+            <span id="statusText">Within Budget! ($0 under budget)</span>
+          </div>
+        </div>
+
+        <!-- Student Practice / Quiz Section -->
+        <div class="card quiz-card">
+          <h2>✏️ Student Practice Challenge</h2>
+          <p style="margin-bottom: 16px; font-size: 0.95rem;" id="quizIntro">
+            Calculate the outer perimeter, total area, and cost for this plan. Test your answers below!
+          </p>
+
+          <form id="quizForm" onsubmit="return false;">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="studentPerimeter">Outer Perimeter (<span class="unit-label">m</span>):</label>
+                <input type="number" id="studentPerimeter" placeholder="Enter perimeter">
+              </div>
+              <div class="form-group">
+                <label for="studentArea">Total Area (<span class="unit-label">m²</span>):</label>
+                <input type="number" id="studentArea" placeholder="Enter area">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="studentTotalCost">Total Cost ($):</label>
+                <input type="number" id="studentTotalCost" placeholder="Enter total cost">
+              </div>
+              <div class="form-group">
+                <label for="studentBudgetCheck">Is it within budget?</label>
+                <select id="studentBudgetCheck">
+                  <option value="">-- Select --</option>
+                  <option value="yes">Yes, within budget</option>
+                  <option value="no">No, over budget</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary" id="checkAnswersBtn">Check My Answers</button>
+          </form>
+
+          <div id="quizFeedback" class="feedback"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Scenario Configs
+    const scenarios = {
+      garden: {
+        title: "🌱 School Garden Floor Plan",
+        unit: "m",
+        areaUnit: "m²",
+        borderLabel: "Fence",
+        surfaceLabel: "Grass",
+        shapeALabel: "Vegetable Plot (Shape A)",
+        shapeBLabel: "Herb Garden (Shape B)",
+        defaultA: { w: 6, h: 4 },
+        defaultB: { w: 4, h: 4 },
+        borderPrice: 15,
+        surfacePrice: 10,
+        budget: 700,
+        intro: "Design a school garden with 2 sections! Calculate the perimeter fence and grass sod area needed."
+      },
+      classroom: {
+        title: "🏫 Classroom Floor Plan",
+        unit: "ft",
+        areaUnit: "sq ft",
+        borderLabel: "Baseboard",
+        surfaceLabel: "Carpet",
+        shapeALabel: "Main Classroom (Shape A)",
+        shapeBLabel: "Reading Nook (Shape B)",
+        defaultA: { w: 20, h: 15 },
+        defaultB: { w: 10, h: 10 },
+        borderPrice: 4,
+        surfacePrice: 3,
+        budget: 1800,
+        intro: "Plan a new classroom and reading nook! Calculate baseboard border length and carpet area needed."
+      },
+      playground: {
+        title: "🛝 Playground Safety Zone Plan",
+        unit: "m",
+        areaUnit: "m²",
+        borderLabel: "Safety Curb",
+        surfaceLabel: "Rubber Tile",
+        shapeALabel: "Jungle Gym Area (Shape A)",
+        shapeBLabel: "Swing Set Area (Shape B)",
+        defaultA: { w: 10, h: 8 },
+        defaultB: { w: 6, h: 6 },
+        borderPrice: 20,
+        surfacePrice: 25,
+        budget: 3500,
+        intro: "Design a safe playground layout! Calculate safety curb border length and rubber surfacing area."
+      }
+    };
+
+    let currentScenario = "garden";
+
+    // DOM Elements
+    const scenarioBtns = document.querySelectorAll('.scenario-btn');
+    const attachmentModeSelect = document.getElementById('attachmentMode');
+    const shapeAWidthInput = document.getElementById('shapeAWidth');
+    const shapeAHeightInput = document.getElementById('shapeAHeight');
+    const shapeBWidthInput = document.getElementById('shapeBWidth');
+    const shapeBHeightInput = document.getElementById('shapeBHeight');
+    const borderPriceInput = document.getElementById('borderPrice');
+    const surfacePriceInput = document.getElementById('surfacePrice');
+    const budgetLimitInput = document.getElementById('budgetLimit');
+
+    // UI Label Elements
+    const scenarioTitle = document.getElementById('scenarioTitle');
+    const quizIntro = document.getElementById('quizIntro');
+    const shapeALabel = document.getElementById('shapeALabel');
+    const shapeBLabel = document.getElementById('shapeBLabel');
+    const legendALabel = document.getElementById('legendALabel');
+    const legendBLabel = document.getElementById('legendBLabel');
+    const borderPriceLabel = document.getElementById('borderPriceLabel');
+    const surfacePriceLabel = document.getElementById('surfacePriceLabel');
+    const perimeterCalcLabel = document.getElementById('perimeterCalcLabel');
+    const areaCalcLabel = document.getElementById('areaCalcLabel');
+    const borderCostLabel = document.getElementById('borderCostLabel');
+    const surfaceCostLabel = document.getElementById('surfaceCostLabel');
+    const unitLabels = document.querySelectorAll('.unit-label');
+
+    // Calculated Value Output Elements
+    const calcPerimeter = document.getElementById('calcPerimeter');
+    const calcArea = document.getElementById('calcArea');
+    const calcBorderCost = document.getElementById('calcBorderCost');
+    const calcSurfaceCost = document.getElementById('calcSurfaceCost');
+    const calcTotalCost = document.getElementById('calcTotalCost');
+    const budgetStatus = document.getElementById('budgetStatus');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
+
+    // Quiz Elements
+    const checkAnswersBtn = document.getElementById('checkAnswersBtn');
+    const quizFeedback = document.getElementById('quizFeedback');
+    const studentPerimeter = document.getElementById('studentPerimeter');
+    const studentArea = document.getElementById('studentArea');
+    const studentTotalCost = document.getElementById('studentTotalCost');
+    const studentBudgetCheck = document.getElementById('studentBudgetCheck');
+
+    // Current Calculations State
+    let currentCalc = {
+      perimeter: 0,
+      area: 0,
+      borderCost: 0,
+      surfaceCost: 0,
+      totalCost: 0,
+      isWithinBudget: true,
+      budgetDiff: 0
+    };
+
+    function loadScenario(scenarioKey) {
+      currentScenario = scenarioKey;
+      const config = scenarios[scenarioKey];
+
+      // Update active nav button
+      scenarioBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.scenario === scenarioKey);
+      });
+
+      // Update Labels
+      scenarioTitle.textContent = config.title;
+      quizIntro.textContent = config.intro;
+      shapeALabel.textContent = config.shapeALabel;
+      shapeBLabel.textContent = config.shapeBLabel;
+      legendALabel.textContent = config.shapeALabel;
+      legendBLabel.textContent = config.shapeBLabel;
+
+      borderPriceLabel.innerHTML = `${config.borderLabel} Price per <span class="unit-label">${config.unit}</span> ($):`;
+      surfacePriceLabel.innerHTML = `${config.surfaceLabel} Price per <span class="unit-label">${config.areaUnit}</span> ($):`;
+
+      perimeterCalcLabel.textContent = `Outer ${config.borderLabel} Perimeter`;
+      areaCalcLabel.textContent = `Total ${config.surfaceLabel} Area`;
+      borderCostLabel.textContent = `${config.borderLabel} Cost`;
+      surfaceCostLabel.textContent = `${config.surfaceLabel} Cost`;
+
+      unitLabels.forEach(el => {
+        const parentText = el.parentElement ? el.parentElement.textContent : '';
+        const grandParentText = (el.parentElement && el.parentElement.parentElement) ? el.parentElement.parentElement.textContent : '';
+        if (parentText.includes('Area') || grandParentText.includes('Area') || parentText.includes('sq') || el.id === 'areaUnitSpan') {
+          el.textContent = config.areaUnit;
+        } else {
+          el.textContent = config.unit;
+        }
+      });
+
+      // Set Default Values
+      shapeAWidthInput.value = config.defaultA.w;
+      shapeAHeightInput.value = config.defaultA.h;
+      shapeBWidthInput.value = config.defaultB.w;
+      shapeBHeightInput.value = config.defaultB.h;
+      borderPriceInput.value = config.borderPrice;
+      surfacePriceInput.value = config.surfacePrice;
+      budgetLimitInput.value = config.budget;
+
+      // Clear Quiz inputs and feedback
+      studentPerimeter.value = '';
+      studentArea.value = '';
+      studentTotalCost.value = '';
+      studentBudgetCheck.value = '';
+      quizFeedback.style.display = 'none';
+
+      recalculate();
+    }
+
+    function calculateCompositeShape() {
+      const wA = parseFloat(shapeAWidthInput.value) || 0;
+      const hA = parseFloat(shapeAHeightInput.value) || 0;
+      const wB = parseFloat(shapeBWidthInput.value) || 0;
+      const hB = parseFloat(shapeBHeightInput.value) || 0;
+      const mode = attachmentModeSelect.value;
+
+      const pA = 2 * (wA + hA);
+      const pB = 2 * (wB + hB);
+      const areaA = wA * hA;
+      const areaB = wB * hB;
+      const totalArea = areaA + areaB;
+
+      let sharedEdge = 0;
+      if (mode === 'side-by-side') {
+        sharedEdge = Math.min(hA, hB);
+      } else { // stacked
+        sharedEdge = Math.min(wA, wB);
+      }
+
+      // Outer perimeter equals sum of perimeters minus twice the shared boundary segment
+      const outerPerimeter = pA + pB - 2 * sharedEdge;
+
+      const borderPrice = parseFloat(borderPriceInput.value) || 0;
+      const surfacePrice = parseFloat(surfacePriceInput.value) || 0;
+      const budgetLimit = parseFloat(budgetLimitInput.value) || 0;
+
+      const borderCost = outerPerimeter * borderPrice;
+      const surfaceCost = totalArea * surfacePrice;
+      const totalCost = borderCost + surfaceCost;
+      const isWithin = totalCost <= budgetLimit;
+      const budgetDiff = Math.abs(budgetLimit - totalCost);
+
+      currentCalc = {
+        wA, hA, wB, hB, mode,
+        perimeter: outerPerimeter,
+        area: totalArea,
+        borderCost,
+        surfaceCost,
+        totalCost,
+        budgetLimit,
+        isWithinBudget: isWithin,
+        budgetDiff
+      };
+
+      return currentCalc;
+    }
+
+    function recalculate() {
+      const calc = calculateCompositeShape();
+      const config = scenarios[currentScenario];
+
+      calcPerimeter.textContent = calc.perimeter;
+      calcArea.textContent = calc.area;
+      calcBorderCost.textContent = calc.borderCost.toFixed(2);
+      calcSurfaceCost.textContent = calc.surfaceCost.toFixed(2);
+      calcTotalCost.textContent = calc.totalCost.toFixed(2);
+
+      if (calc.isWithinBudget) {
+        budgetStatus.className = 'budget-status under';
+        statusIcon.textContent = '✅';
+        statusText.textContent = `Within Budget! ($${calc.budgetDiff.toFixed(2)} remaining under budget)`;
+      } else {
+        budgetStatus.className = 'budget-status over';
+        statusIcon.textContent = '⚠️';
+        statusText.textContent = `Over Budget! ($${calc.budgetDiff.toFixed(2)} over budget limit)`;
+      }
+
+      drawCanvas(calc);
+    }
+
+    function drawCanvas(calc) {
+      const svg = document.getElementById('designCanvas');
+      svg.innerHTML = ''; // clear previous content
+
+      const unit = scenarios[currentScenario].unit;
+      const { wA, hA, wB, hB, mode } = calc;
+
+      if (wA <= 0 || hA <= 0 || wB <= 0 || hB <= 0) return;
+
+      // Determine total bounding box dimensions
+      let totalW = 0;
+      let totalH = 0;
+
+      if (mode === 'side-by-side') {
+        totalW = wA + wB;
+        totalH = Math.max(hA, hB);
+      } else { // stacked
+        totalW = Math.max(wA, wB);
+        totalH = hA + hB;
+      }
+
+      const canvasWidth = 600;
+      const canvasHeight = 380;
+      const padding = 60;
+
+      const scaleX = (canvasWidth - padding * 2) / totalW;
+      const scaleY = (canvasHeight - padding * 2) / totalH;
+      const scale = Math.min(scaleX, scaleY);
+
+      // Center the shape group
+      const offsetX = (canvasWidth - totalW * scale) / 2;
+      const offsetY = (canvasHeight - totalH * scale) / 2;
+
+      let rectA = { x: offsetX, y: offsetY, w: wA * scale, h: hA * scale };
+      let rectB = { x: 0, y: 0, w: wB * scale, h: hB * scale };
+
+      if (mode === 'side-by-side') {
+        rectB.x = offsetX + wA * scale;
+        rectB.y = offsetY;
+      } else { // stacked
+        rectB.x = offsetX;
+        rectB.y = offsetY + hA * scale;
+      }
+
+      const ns = "http://www.w3.org/2000/svg";
+
+      // Create defs for arrowheads/grid patterns if needed
+      const defs = document.createElementNS(ns, 'defs');
+      svg.appendChild(defs);
+
+      // Draw Shape A
+      const shapeARect = document.createElementNS(ns, 'rect');
+      shapeARect.setAttribute('x', rectA.x);
+      shapeARect.setAttribute('y', rectA.y);
+      shapeARect.setAttribute('width', rectA.w);
+      shapeARect.setAttribute('height', rectA.h);
+      shapeARect.setAttribute('fill', 'rgba(76, 175, 80, 0.35)');
+      shapeARect.setAttribute('stroke', '#2e7d32');
+      shapeARect.setAttribute('stroke-width', '3');
+      shapeARect.setAttribute('rx', '4');
+      svg.appendChild(shapeARect);
+
+      // Draw Shape B
+      const shapeBRect = document.createElementNS(ns, 'rect');
+      shapeBRect.setAttribute('x', rectB.x);
+      shapeBRect.setAttribute('y', rectB.y);
+      shapeBRect.setAttribute('width', rectB.w);
+      shapeBRect.setAttribute('height', rectB.h);
+      shapeBRect.setAttribute('fill', 'rgba(33, 150, 243, 0.35)');
+      shapeBRect.setAttribute('stroke', '#0288d1');
+      shapeBRect.setAttribute('stroke-width', '3');
+      shapeBRect.setAttribute('rx', '4');
+      svg.appendChild(shapeBRect);
+
+      // Highlight shared boundary line
+      const sharedLine = document.createElementNS(ns, 'line');
+      if (mode === 'side-by-side') {
+        const sharedLength = Math.min(rectA.h, rectB.h);
+        sharedLine.setAttribute('x1', rectB.x);
+        sharedLine.setAttribute('y1', offsetY);
+        sharedLine.setAttribute('x2', rectB.x);
+        sharedLine.setAttribute('y2', offsetY + sharedLength);
+      } else { // stacked
+        const sharedLength = Math.min(rectA.w, rectB.w);
+        sharedLine.setAttribute('x1', offsetX);
+        sharedLine.setAttribute('y1', rectB.y);
+        sharedLine.setAttribute('x2', offsetX + sharedLength);
+        sharedLine.setAttribute('y2', rectB.y);
+      }
+      sharedLine.setAttribute('stroke', '#ff9800');
+      sharedLine.setAttribute('stroke-width', '5');
+      sharedLine.setAttribute('stroke-dasharray', '8 4');
+      svg.appendChild(sharedLine);
+
+      // Text Labels function
+      function addLabel(text, x, y, color = '#2c3e50', fontSize = '13px', fontWeight = 'bold') {
+        const txt = document.createElementNS(ns, 'text');
+        txt.setAttribute('x', x);
+        txt.setAttribute('y', y);
+        txt.setAttribute('fill', color);
+        txt.setAttribute('font-size', fontSize);
+        txt.setAttribute('font-weight', fontWeight);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('dominant-baseline', 'middle');
+        txt.textContent = text;
+        svg.appendChild(txt);
+      }
+
+      // Shape Labels (center of rectangles)
+      addLabel(`Shape A`, rectA.x + rectA.w / 2, rectA.y + rectA.h / 2 - 10, '#1b5e20', '15px', 'bold');
+      addLabel(`${wA} ${unit} × ${hA} ${unit}`, rectA.x + rectA.w / 2, rectA.y + rectA.h / 2 + 10, '#2e7d32', '12px', '600');
+
+      addLabel(`Shape B`, rectB.x + rectB.w / 2, rectB.y + rectB.h / 2 - 10, '#01579b', '15px', 'bold');
+      addLabel(`${wB} ${unit} × ${hB} ${unit}`, rectB.x + rectB.w / 2, rectB.y + rectB.h / 2 + 10, '#0288d1', '12px', '600');
+
+      // Dimension labels on outer edges
+      // Top width A
+      addLabel(`${wA} ${unit}`, rectA.x + rectA.w / 2, rectA.y - 15, '#2e7d32');
+      // Left height A
+      addLabel(`${hA} ${unit}`, rectA.x - 25, rectA.y + rectA.h / 2, '#2e7d32');
+
+      // Shape B dimensions
+      if (mode === 'side-by-side') {
+        // Top width B
+        addLabel(`${wB} ${unit}`, rectB.x + rectB.w / 2, rectB.y - 15, '#0288d1');
+        // Right height B
+        addLabel(`${hB} ${unit}`, rectB.x + rectB.w + 25, rectB.y + rectB.h / 2, '#0288d1');
+      } else { // stacked
+        // Left height B
+        addLabel(`${hB} ${unit}`, rectB.x - 25, rectB.y + rectB.h / 2, '#0288d1');
+        // Bottom width B
+        addLabel(`${wB} ${unit}`, rectB.x + rectB.w / 2, rectB.y + rectB.h + 18, '#0288d1');
+      }
+    }
+
+    // Event listeners
+    scenarioBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        loadScenario(btn.dataset.scenario);
+      });
+    });
+
+    [attachmentModeSelect, shapeAWidthInput, shapeAHeightInput, shapeBWidthInput, shapeBHeightInput,
+     borderPriceInput, surfacePriceInput, budgetLimitInput].forEach(input => {
+      input.addEventListener('input', recalculate);
+      input.addEventListener('change', recalculate);
+    });
+
+    // Quiz Check Logic
+    checkAnswersBtn.addEventListener('click', () => {
+      const pAns = parseFloat(studentPerimeter.value);
+      const aAns = parseFloat(studentArea.value);
+      const cAns = parseFloat(studentTotalCost.value);
+      const bAns = studentBudgetCheck.value;
+
+      if (isNaN(pAns) || isNaN(aAns) || isNaN(cAns) || !bAns) {
+        quizFeedback.className = 'feedback incorrect';
+        quizFeedback.style.display = 'block';
+        quizFeedback.innerHTML = '⚠️ Please fill in all 4 answer fields before checking!';
+        return;
+      }
+
+      const expectedIsWithin = currentCalc.isWithinBudget ? 'yes' : 'no';
+
+      const pCorrect = Math.abs(pAns - currentCalc.perimeter) < 0.1;
+      const aCorrect = Math.abs(aAns - currentCalc.area) < 0.1;
+      const cCorrect = Math.abs(cAns - currentCalc.totalCost) < 0.5;
+      const bCorrect = bAns === expectedIsWithin;
+
+      if (pCorrect && aCorrect && cCorrect && bCorrect) {
+        quizFeedback.className = 'feedback correct';
+        quizFeedback.style.display = 'block';
+        quizFeedback.innerHTML = '🎉 Excellent job! All your calculations and budget check are completely correct!';
+      } else {
+        quizFeedback.className = 'feedback incorrect';
+        quizFeedback.style.display = 'block';
+        let feedbackMsg = '❌ Keep trying! Here is how your answers look:<br><ul>';
+        feedbackMsg += `<li>Perimeter: ${pCorrect ? '✅ Correct' : '❌ Incorrect (Expected ' + currentCalc.perimeter + ')'}</li>`;
+        feedbackMsg += `<li>Area: ${aCorrect ? '✅ Correct' : '❌ Incorrect (Expected ' + currentCalc.area + ')'}</li>`;
+        feedbackMsg += `<li>Total Cost: ${cCorrect ? '✅ Correct' : '❌ Incorrect (Expected $' + currentCalc.totalCost.toFixed(2) + ')'}</li>`;
+        feedbackMsg += `<li>Budget Decision: ${bCorrect ? '✅ Correct' : '❌ Incorrect'}</li>`;
+        feedbackMsg += '</ul>';
+        quizFeedback.innerHTML = feedbackMsg;
+      }
+    });
+
+    // Initialize
+    loadScenario('garden');
+  </script>
+</body>
+</html>
